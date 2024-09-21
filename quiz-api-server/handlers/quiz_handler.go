@@ -83,15 +83,20 @@ func GetComparison(w http.ResponseWriter, r *http.Request) {
 	// Calculate how many users the given user performed better than
 	betterThanCount := 0
 	totalUsers := len(quizResults)
-	for _, result := range quizResults {
-		if userResult.CorrectAnswers > result.CorrectAnswers && userResult.UserName != result.UserName {
-			betterThanCount++
-		}
-	}
 
 	// Calculate the percentage of users this user outperformed
-	betterThanPercentage := float64(betterThanCount) / float64(totalUsers-1) * 100
-	response := fmt.Sprintf("You were better than %.2f%% of all quizzers", betterThanPercentage)
+	var response string
+	if totalUsers == 1 {
+		response = "You are the only player so far"
+	} else {
+		for _, result := range quizResults {
+			if userResult.CorrectAnswers > result.CorrectAnswers && userResult.UserName != result.UserName {
+				betterThanCount++
+			}
+		}
+		betterThanPercentage := float64(betterThanCount) / float64(totalUsers-1) * 100
+		response = fmt.Sprintf("You were better than %.2f%% of all quizzers", betterThanPercentage)
+	}
 
 	// Send response back to the client
 	json.NewEncoder(w).Encode(map[string]string{"message": response})
